@@ -1,0 +1,4 @@
+cairosvg
+svgwrite
+brother_ql
+pillow

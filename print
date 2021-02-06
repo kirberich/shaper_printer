@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+from dominos import draw_dominos, calculate_columns, generate_domino_png
+from brother_ql.devicedependent import label_type_specs
+import argparse
+from PIL import Image
+from printer import print_image
+
+OUTPUT_FILE = "output.png"
+EXPECTED_HEIGHT = label_type_specs["62"]["dots_printable"][0]
+SPACING = 2.73  # predefined to make 4 labels fit on a 62mm label without any resizing
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Print shaper dominos on 62mm labels.")
+    parser.add_argument("length", type=int, help="(mm)")
+    parser.add_argument("printer_identifier")
+    parser.add_argument("printer_model")
+    parser.add_argument("--padding", type=float, default=0)
+    parser.add_argument("--dry-run", action="store_true")
+
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    columns = calculate_columns(args.length, args.padding, SPACING)
+    if not columns:
+        raise RuntimeError(f"Cannot fit any dominos into {args.length}mm")
+
+    # Generate the domino image
+    generate_domino_png(
+        rows=4,  # max that fits on a 62mm label
+        columns=columns,
+        filename=OUTPUT_FILE,
+        row_spacing=SPACING,
+        column_spacing=SPACING,
+        padding=args.padding,
+    )
+
+    # Validate the image size
+    with Image.open(OUTPUT_FILE) as img:
+        width, height = img.size
+        if abs(height - EXPECTED_HEIGHT) > 0:
+            raise RuntimeError(
+                f"Image size doesn't match. Image is {height} high, printer requires {EXPECTED_HEIGHT}"
+            )
+
+    if not args.dry_run:
+        print_image(
+            OUTPUT_FILE,
+            printer_identifier=args.printer_identifier,
+            model=args.printer_model,
+        )

@@ -7,7 +7,7 @@ from printer import print_image
 
 OUTPUT_FILE = "output.png"
 EXPECTED_HEIGHT = label_type_specs["62"]["dots_printable"][0]
-SPACING = 2.73  # predefined to make 4 labels fit on a 62mm label without any resizing
+SPACING = 2.38  # predefined to make 4 labels fit on a 62mm label without any resizing
 
 
 def parse_args():

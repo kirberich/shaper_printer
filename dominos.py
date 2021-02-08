@@ -161,6 +161,7 @@ def generate_domino_png(
     padding=5,
     row_spacing=DOT_SPACING,
     column_spacing=DOT_SPACING,
+    hq=False,
 ):
     """Draw a grid of dominos and save the output as a PNG."""
     drawing = draw_dominos(
@@ -171,9 +172,10 @@ def generate_domino_png(
         column_spacing=row_spacing,
         padding=padding,
     )
+
     svg2png(
         bytestring=drawing.tostring(),
         write_to=filename,
         background_color="white",
-        dpi=300,
+        dpi=600 if hq else 300,
     )

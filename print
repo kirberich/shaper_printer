@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 from dominos import draw_dominos, calculate_columns, generate_domino_png
-from brother_ql.devicedependent import label_type_specs
 import argparse
-from PIL import Image
+
 from printer import print_image
 
 OUTPUT_FILE = "output.png"
-EXPECTED_HEIGHT = label_type_specs["62"]["dots_printable"][0]
 SPACING = 2.38  # predefined to make 4 labels fit on a 62mm label without any resizing
 
 
@@ -17,6 +15,12 @@ def parse_args():
     parser.add_argument("printer_model")
     parser.add_argument("--padding", type=float, default=0)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--hq",
+        action="store_true",
+        help="Print in 600DPI - Note this might make printing extremely slow!",
+    )
+    parser.add_argument("--copies", type=int, default=1)
 
     args = parser.parse_args()
     return args
@@ -37,19 +41,14 @@ if __name__ == "__main__":
         row_spacing=SPACING,
         column_spacing=SPACING,
         padding=args.padding,
+        hq=args.hq,
     )
 
-    # Validate the image size
-    with Image.open(OUTPUT_FILE) as img:
-        width, height = img.size
-        if abs(height - EXPECTED_HEIGHT) > 0:
-            raise RuntimeError(
-                f"Image size doesn't match. Image is {height} high, printer requires {EXPECTED_HEIGHT}"
-            )
-
     if not args.dry_run:
-        print_image(
-            OUTPUT_FILE,
-            printer_identifier=args.printer_identifier,
-            model=args.printer_model,
-        )
+        for x in range(args.copies):
+            print_image(
+                OUTPUT_FILE,
+                printer_identifier=args.printer_identifier,
+                model=args.printer_model,
+                hq=args.hq,
+            )

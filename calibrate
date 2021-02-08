@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+import argparse
+
+import svgwrite
+from cairosvg import svg2png
+from svgwrite import mm
+
+from printer import print_image
+
+# Quick calibration routine to make sure the printer prints things at the correct scale
+
+PRINTABLE_HEIGHT = 58.928  # on a 62mm label
+
+
+def calibration_png():
+    drawing = svgwrite.Drawing(
+        "calibration.svg",
+        profile="tiny",
+        height=PRINTABLE_HEIGHT * mm,
+        width=60 * mm,
+        size=(60 * mm, PRINTABLE_HEIGHT * mm),
+    )
+
+    drawing.add(drawing.rect((2 * mm, 2 * mm), (50 * mm, 50 * mm), fill="black"))
+    drawing.add(drawing.rect((2.1 * mm, 2.1 * mm), (49.8 * mm, 25 * mm), fill="white"))
+    drawing.add(drawing.text("50x50", insert=(10 * mm, 10 * mm)))
+
+    svg2png(
+        bytestring=drawing.tostring(),
+        write_to="calibration.png",
+        background_color="white",
+        dpi=300,
+    )
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Print shaper dominos on 62mm labels.")
+    parser.add_argument("printer_identifier")
+    parser.add_argument("printer_model")
+
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    calibration_png()
+
+    print_image(
+        "calibration.png",
+        printer_identifier=args.printer_identifier,
+        model=args.printer_model,
+    )
